@@ -1,0 +1,33 @@
+# This starter workflow is for a CMake project running on a single platform. There is a different starter workflow if you need cross-platform coverage.
+# See: https://github.com/actions/starter-workflows/blob/main/ci/cmake-multi-platform.yml
+name: CMake on a single platform
+
+on:
+  push:
+    branches: [ "v1.x" ]
+  pull_request:
+    branches: [ "v1.x" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Configure CMake
+      run: |
+        cmake -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK/build/cmake/android.toolchain.cmake \
+        -DANDROID_ABI="arm64-v8a" \
+        -DANDROID_NDK=$ANDROID_NDK \
+        -DANDROID_PLATFORM=android-26 \
+        .
+    - name: Build
+      run: make -j$(proc)
+    - name: zip
+      run: tar cfz ubuntu_build.tar.gz include libuv.a libuv.so
+    - name: Upload Ubuntu build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: ubuntu_build
+        path: ubuntu_build.tar.gz
